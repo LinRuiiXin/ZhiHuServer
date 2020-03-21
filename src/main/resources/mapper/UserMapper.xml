@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sz.ZhiHu.dao.UserDao">
+    <select id="getUserIdByMail" resultType="java.lang.Long">
+        select id from user where mail = #{mail}
+    </select>
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+        insert into user(userName,password,mail,phone) values (#{userName},#{password},#{mail},#{phone})
+    </insert>
+    <select id="getUserIdByUserName" resultType="java.lang.Long">
+        select id from user where username = #{username}
+    </select>
+    <select id="queryUserByMail" resultType="user">
+        select * from user where mail = #{mail}
+    </select>
+    <select id="queryUserByMailPassword" resultType="user">
+        select * from user where mail = #{mail} and password = #{password}
+    </select>
+</mapper>
