@@ -18,4 +18,10 @@
     <select id="queryUserByMailPassword" resultType="user">
         select * from user where mail = #{mail} and password = #{password}
     </select>
+    <select id="getUserIdByPhone" resultType="java.lang.Long">
+        select id from user where phone = #{phone}
+    </select>
+    <update id="setPortraitFileName">
+        update user set portraitFileName = #{fileName} where id = #{id}
+    </update>
 </mapper>

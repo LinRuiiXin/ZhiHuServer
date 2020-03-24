@@ -8,6 +8,7 @@ import com.sz.ZhiHu.util.SecurityCodeUtil;
 import com.sz.ZhiHu.validator.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
@@ -26,7 +27,7 @@ public class RegisterController {
     @Autowired
     SyncService syncService;
     @Autowired
-    RedisTemplate redisTemplate;
+    StringRedisTemplate redisTemplate;
     //根据邮箱地址判断当前用户是否已被注册，如果还未被注册，发送验证码，否则返回错误信息
     @GetMapping("/SecurityCode/{mail}")
     public SimpleDto sendMailSecurityCode(@PathVariable("mail") String mail){
@@ -38,7 +39,7 @@ public class RegisterController {
         }
     }
     //检查验证码
-    @PostMapping("/SecurityCode/{mail}/{code}")
+    @GetMapping("/SecurityCode/{mail}/{code}")
     public SimpleDto validateCode(@PathVariable("mail")String mail,@PathVariable("code") String code){
         Object o = redisTemplate.opsForValue().get("RegisterCode:"+mail);
         if(o == null){
@@ -66,11 +67,15 @@ public class RegisterController {
         }else{
             synchronized (this){
                 if(!userService.nameHasRegistered(user.getUserName())){
-                    if(!userService.mailHasRegistered(user.getMail())) {
-                        userService.insertUser(user);
-                        return new SimpleDto(true, null, null);
+                    if(!userService.phoneHasRegistered(user.getPhone())){
+                        if(!userService.mailHasRegistered(user.getMail())) {
+                            User newUser = userService.insertUser(user);
+                            return new SimpleDto(true, null, newUser);
+                        }else{
+                            return new SimpleDto(false,"该邮箱已被注册",null);
+                        }
                     }else{
-                        return new SimpleDto(false,"该邮箱已被注册",null);
+                        return new SimpleDto(false,"该手机号已被注册",null);
                     }
                 }else{
                     return new SimpleDto(false,"该用户名已被注册",null);

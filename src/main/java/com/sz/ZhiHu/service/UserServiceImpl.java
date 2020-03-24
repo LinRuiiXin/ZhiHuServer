@@ -23,8 +23,9 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void insertUser(User user) {
+    public User insertUser(User user) {
         userDao.insertUser(user);
+        return user;
     }
 
     @Override
@@ -40,5 +41,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public User queryUserByMailPassword(String mail, String password) {
         return userDao.queryUserByMailPassword(mail,password);
+    }
+
+    @Override
+    public boolean phoneHasRegistered(String phone) {
+        return userDao.getUserIdByPhone(phone) == null?false:true;
+    }
+
+    @Override
+    public void setPortraitFileNameById(Long id, String fileName) {
+        userDao.setPortraitFileName(id,fileName);
     }
 }

@@ -12,7 +12,8 @@ public class User implements Serializable {
     private String password;
     private String mail;
     private String phone;
-
+    private String profile;
+    private String portraitFileName;
     public Long getId() {
         return id;
     }
@@ -53,6 +54,22 @@ public class User implements Serializable {
         this.phone = phone;
     }
 
+    public String getProfile() {
+        return profile;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    public String getPortraitFileName() {
+        return portraitFileName;
+    }
+
+    public void setPortraitFileName(String portraitFileName) {
+        this.portraitFileName = portraitFileName;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -61,6 +78,8 @@ public class User implements Serializable {
                 ", password='" + password + '\'' +
                 ", mail='" + mail + '\'' +
                 ", phone='" + phone + '\'' +
+                ", profile='" + profile + '\'' +
+                ", portraitFileName='" + portraitFileName + '\'' +
                 '}';
     }
 }

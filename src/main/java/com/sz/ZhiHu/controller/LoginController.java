@@ -34,7 +34,7 @@ public class LoginController {
         }
     }
     //免密码登录
-    @PostMapping("/NoPassword/{mail}/{code}")
+    @GetMapping("/NoPassword/{mail}/{code}")
     public SimpleDto loginNoPassword(@PathVariable("mail") String mail,@PathVariable("code")String code){
         Object o = redisTemplate.opsForValue().get("LoginCode:" + mail);
         if(o != null){
@@ -54,7 +54,7 @@ public class LoginController {
         }
     }
     //带密码登录
-    @PostMapping("/{mail}/{password}")
+    @GetMapping("/{mail}/{password}")
     public SimpleDto loginHasPassword(@PathVariable("mail")String mail,@PathVariable("password")String password){
         User user = userService.queryUserByMailPassword(mail, password);
         if(user == null){
