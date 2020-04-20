@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sz.ZhiHu.dao.AnswerDao">
+    <insert id="insertAnswer" keyProperty="id" useGeneratedKeys="true">
+        insert into answer(questionId,userId,content,contentType,supportSum,commentSum,time)
+        values (#{questionId},#{userId},#{content},#{contentType},0,0,now())
+    </insert>
+    <select id="queryRandomAnswerByQuestionId" resultType="answer">
+        select * from answer where questionId = #{questionId} order by rand() limit 1
+    </select>
+    <select id="getRandomAnswer" resultType="answer">
+        select * from answer order by rand() limit #{sum}
+    </select>
+    <select id="queryAnswerById" resultType="answer">
+        select id,questionId,userId,supportSum,commentSum,time from answer where id = #{id}
+    </select>
+    <select id="queryNextAnswer" resultType="answer">
+        select id,questionId,userId,supportSum,commentSum,time
+        from answer
+        where questionId = #{questionId} and supportSum &lt;= #{supportSum} limit 1
+    </select>
+    <select id="queryPreviousAnswer" resultType="answer">
+        select id,questionId,userId,supportSum,commentSum,time
+        from (
+            select id,questionId,userId,supportSum,commentSum,time from answer
+            where questionId = #{questionId} and supportSum >= #{suppportSum}
+        ) as a
+        where id &lt; #{id} limit 0,1
+    </select>
+    <select id="queryNextTreeAnswer" resultType="answer">
+        select id,questionId,userId,supportSum,commentSum,time
+        from (
+            select id,questionId,userId,supportSum,commentSum,time from answer
+            where questionId = #{questionId} and supportSum &lt; #{supportSum} order by supportSum desc,id asc
+        ) as a
+        where id >= #{id} limit 0,3
+    </select>
+    <select id="getAnswerOrder" resultType="java.lang.Long">
+        select id from answer where questionId = #{questionId} order by supportSum desc,id asc
+    </select>
+</mapper>

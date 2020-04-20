@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sz.ZhiHu.dao.ArticleDao">
+    <select id="getRandomArticle" resultType="article">
+        select * from article order by rand() limit #{sum}
+    </select>
+</mapper>

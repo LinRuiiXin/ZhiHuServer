@@ -1,6 +1,6 @@
 package com.sz.ZhiHu.validator;
 
-import com.sz.ZhiHu.pojo.User;
+import com.sz.ZhiHu.po.User;
 import com.sz.ZhiHu.util.RegexUtil;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

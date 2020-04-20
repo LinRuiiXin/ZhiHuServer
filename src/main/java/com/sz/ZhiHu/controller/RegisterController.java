@@ -1,13 +1,12 @@
 package com.sz.ZhiHu.controller;
 
 import com.sz.ZhiHu.dto.SimpleDto;
-import com.sz.ZhiHu.pojo.User;
-import com.sz.ZhiHu.service.SyncService;
+import com.sz.ZhiHu.po.User;
+import com.sz.ZhiHu.service.AsyncService;
 import com.sz.ZhiHu.service.UserService;
 import com.sz.ZhiHu.util.SecurityCodeUtil;
 import com.sz.ZhiHu.validator.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
@@ -25,7 +24,7 @@ public class RegisterController {
     @Autowired
     UserService userService;
     @Autowired
-    SyncService syncService;
+    AsyncService asyncService;
     @Autowired
     StringRedisTemplate redisTemplate;
     //根据邮箱地址判断当前用户是否已被注册，如果还未被注册，发送验证码，否则返回错误信息
@@ -34,7 +33,7 @@ public class RegisterController {
         if(userService.mailHasRegistered(mail)){
             return new SimpleDto(false,"该账号已被注册",null);
         }else{
-            syncService.sendMail("RegisterCode:",mail, SecurityCodeUtil.getSecurityCode(6),"感谢注册ZhiHu，您的验证码是");
+            asyncService.sendMail("RegisterCode:",mail, SecurityCodeUtil.getSecurityCode(6),"感谢注册ZhiHu，您的验证码是");
             return new SimpleDto(true,null,null);
         }
     }

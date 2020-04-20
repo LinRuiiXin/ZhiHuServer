@@ -1,8 +1,10 @@
-package com.sz.ZhiHu.pojo;
+package com.sz.ZhiHu.po;
 
 import org.apache.ibatis.type.Alias;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 
 @Alias("user")
@@ -14,6 +16,7 @@ public class User implements Serializable {
     private String phone;
     private String profile;
     private String portraitFileName;
+    private Date registerDate;
     public Long getId() {
         return id;
     }
@@ -70,6 +73,14 @@ public class User implements Serializable {
         this.portraitFileName = portraitFileName;
     }
 
+    public Date getRegisterDate() {
+        return registerDate;
+    }
+
+    public void setRegisterDate(Date registerDate) {
+        this.registerDate = registerDate;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -80,6 +91,7 @@ public class User implements Serializable {
                 ", phone='" + phone + '\'' +
                 ", profile='" + profile + '\'' +
                 ", portraitFileName='" + portraitFileName + '\'' +
+                ", registerDate=" + registerDate +
                 '}';
     }
 }

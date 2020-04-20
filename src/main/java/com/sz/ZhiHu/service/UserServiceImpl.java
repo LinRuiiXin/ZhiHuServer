@@ -1,9 +1,9 @@
 package com.sz.ZhiHu.service;
 
 import com.sz.ZhiHu.dao.UserDao;
-import com.sz.ZhiHu.pojo.User;
+import com.sz.ZhiHu.po.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,5 +51,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void setPortraitFileNameById(Long id, String fileName) {
         userDao.setPortraitFileName(id,fileName);
+    }
+
+    @Cacheable(cacheNames = "User",key = "#id")
+    @Override
+    public User getUserById(Long id) {
+        User user = userDao.queryUserById(id);
+        return user;
     }
 }

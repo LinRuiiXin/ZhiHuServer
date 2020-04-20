@@ -1,12 +1,12 @@
 package com.sz.ZhiHu.controller;
 
 import com.sz.ZhiHu.dto.SimpleDto;
-import com.sz.ZhiHu.pojo.User;
-import com.sz.ZhiHu.service.SyncService;
+import com.sz.ZhiHu.po.User;
+import com.sz.ZhiHu.service.AsyncService;
 import com.sz.ZhiHu.service.UserService;
 import com.sz.ZhiHu.util.SecurityCodeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/Login")
 public class LoginController {
     @Autowired
-    SyncService syncService;
+    AsyncService asyncService;
     @Autowired
     UserService userService;
     @Autowired
-    RedisTemplate redisTemplate;
+    StringRedisTemplate redisTemplate;
     //发送邮件任务
     @GetMapping("/SecurityCode/{mail}")
     public SimpleDto sendMailSecurityCode(@PathVariable("mail")String mail){
@@ -27,7 +27,7 @@ public class LoginController {
             //生成6位随机验证码
             String securityCode = SecurityCodeUtil.getSecurityCode(6);
             //执行异步发送邮件任务
-            syncService.sendMail("LoginCode:",mail,securityCode,"欢迎通过验证码登录ZhiHu,您的验证码是");
+            asyncService.sendMail("LoginCode:",mail,securityCode,"欢迎通过验证码登录ZhiHu,您的验证码是");
             return new SimpleDto(true,null,null);
         }else{
             return new SimpleDto(false,"该账号还未被注册",null);
@@ -60,7 +60,7 @@ public class LoginController {
         if(user == null){
             return new SimpleDto(false,"账号或密码错误",null);
         }else{
-            return new SimpleDto(false,null,user);
+            return new SimpleDto(true,null,user);
         }
     }
 }

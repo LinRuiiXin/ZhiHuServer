@@ -7,7 +7,7 @@
         select id from user where mail = #{mail}
     </select>
     <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
-        insert into user(userName,password,mail,phone) values (#{userName},#{password},#{mail},#{phone})
+        insert into user(userName,password,mail,phone,registerDate) values (#{userName},#{password},#{mail},#{phone},now())
     </insert>
     <select id="getUserIdByUserName" resultType="java.lang.Long">
         select id from user where username = #{username}
@@ -24,4 +24,7 @@
     <update id="setPortraitFileName">
         update user set portraitFileName = #{fileName} where id = #{id}
     </update>
+    <select id="queryUserById" resultType="user">
+        select id,userName,mail,profile,portraitFileName,registerDate from user where id = #{id}
+    </select>
 </mapper>
