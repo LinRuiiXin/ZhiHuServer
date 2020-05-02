@@ -64,20 +64,7 @@ public class RecommendServiceImpl implements RecommendService {
 
         Answer answer = answerService.queryRandomAnswerByQuestionId(id);
         if(answer != null){
-            RecommendViewBean viewBean = new RecommendViewBean();
-            viewBean.setQuestionId(id);
-            viewBean.setContentType(1);
-            viewBean.setContent(answer.getContent());
-            viewBean.setTitle(questionService.getQuestionTitle(id));
-            viewBean.setSupportSum(answer.getSupportSum());
-            viewBean.setContentId(answer.getId());
-            viewBean.setType(answer.getContentType());
-            viewBean.setCommentSum(answer.getCommentSum());
-            User user = userService.getUserById(answer.getUserId());
-            viewBean.setUserId(user.getId());
-            viewBean.setUsername(user.getUserName());
-            viewBean.setPortraitFileName(user.getPortraitFileName());
-            viewBean.setIntroduction(user.getProfile());
+            RecommendViewBean viewBean = wrapAnswer(answer);
             return viewBean;
         }
         return null;
@@ -87,21 +74,7 @@ public class RecommendServiceImpl implements RecommendService {
         List<RecommendViewBean> recommendViewBeans = new ArrayList<>();
         List<Answer> randomAnswer = answerService.getRandomAnswer(sum);
         randomAnswer.forEach(answer -> {
-            RecommendViewBean viewBean = new RecommendViewBean();
-            viewBean.setContentType(1);
-            viewBean.setContentId(answer.getId());
-            viewBean.setSupportSum(answer.getSupportSum());
-            viewBean.setContent(answer.getContent());
-            viewBean.setType(answer.getContentType());
-            viewBean.setCommentSum(answer.getCommentSum());
-            viewBean.setQuestionId(answer.getQuestionId());
-            viewBean.setTitle(questionService.getQuestionTitle(answer.getQuestionId()));
-            User user = userService.getUserById(answer.getUserId());
-            viewBean.setUsername(user.getUserName());
-            viewBean.setUserId(user.getId());
-            viewBean.setIntroduction(user.getProfile());
-            viewBean.setPortraitFileName(user.getPortraitFileName());
-            recommendViewBeans.add(viewBean);
+            recommendViewBeans.add(wrapAnswer(answer));
         });
         return recommendViewBeans;
     }
@@ -125,5 +98,25 @@ public class RecommendServiceImpl implements RecommendService {
             recommendViewBeans.add(viewBean);
         });
         return recommendViewBeans;
+    }
+
+
+    private RecommendViewBean wrapAnswer(Answer answer) {
+        RecommendViewBean viewBean = new RecommendViewBean();
+        viewBean.setQuestionId(answer.getQuestionId());
+        viewBean.setContentType(1);
+        viewBean.setContent(answer.getContent());
+        viewBean.setThumbnail(answer.getThumbnail());
+        viewBean.setTitle(questionService.getQuestionTitle(answer.getQuestionId()));
+        viewBean.setSupportSum(answer.getSupportSum());
+        viewBean.setContentId(answer.getId());
+        viewBean.setType(answer.getContentType());
+        viewBean.setCommentSum(answer.getCommentSum());
+        User user = userService.getUserById(answer.getUserId());
+        viewBean.setUserId(user.getId());
+        viewBean.setUsername(user.getUserName());
+        viewBean.setPortraitFileName(user.getPortraitFileName());
+        viewBean.setIntroduction(user.getProfile());
+        return viewBean;
     }
 }

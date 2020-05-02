@@ -11,6 +11,7 @@ public class RecommendViewBean {
     private String portraitFileName;//用户头像
     private String introduction;//个人简介
     private String content;//内容
+    private String thumbnail;
     private Long supportSum;//点赞数
     private Long commentSum;//评论数
 
@@ -112,6 +113,14 @@ public class RecommendViewBean {
         this.content = content;
     }
 
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
     public Long getSupportSum() {
         return supportSum;
     }
@@ -141,6 +150,7 @@ public class RecommendViewBean {
                 ", portraitFileName='" + portraitFileName + '\'' +
                 ", introduction='" + introduction + '\'' +
                 ", content='" + content + '\'' +
+                ", thumbnail='" + thumbnail + '\'' +
                 ", supportSum=" + supportSum +
                 ", commentSum=" + commentSum +
                 '}';

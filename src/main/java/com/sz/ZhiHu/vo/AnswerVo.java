@@ -4,13 +4,38 @@ import com.sz.ZhiHu.po.Answer;
 import com.sz.ZhiHu.po.User;
 
 public class AnswerVo {
+    private boolean isAttention;
+    private boolean isSupport;
     private User user;
     private Answer answer;
     public AnswerVo(){}
 
+    public AnswerVo(boolean isAttention, boolean isSupport, User user, Answer answer) {
+        this.isAttention = isAttention;
+        this.isSupport = isSupport;
+        this.user = user;
+        this.answer = answer;
+    }
+
     public AnswerVo(User user, Answer answer) {
         this.user = user;
         this.answer = answer;
+    }
+
+    public boolean isAttention() {
+        return isAttention;
+    }
+
+    public void setAttention(boolean attention) {
+        isAttention = attention;
+    }
+
+    public boolean isSupport() {
+        return isSupport;
+    }
+
+    public void setSupport(boolean support) {
+        isSupport = support;
     }
 
     public User getUser() {
@@ -32,7 +57,9 @@ public class AnswerVo {
     @Override
     public String toString() {
         return "AnswerVo{" +
-                "user=" + user +
+                "isAttention=" + isAttention +
+                ", isSupport=" + isSupport +
+                ", user=" + user +
                 ", answer=" + answer +
                 '}';
     }

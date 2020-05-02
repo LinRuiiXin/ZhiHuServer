@@ -12,8 +12,7 @@ public interface AnswerDao {
     Answer queryRandomAnswerByQuestionId(Long questionId);
     List<Answer> getRandomAnswer(Integer sum);
     Answer queryAnswerById(Long id);
-    Answer queryNextAnswer(@Param("questionId") Long questionId,@Param("supportSum") Long supportSum);
-    Answer queryPreviousAnswer(@Param("questionId") Long questionId,@Param("supportSum") Long supportSum);
-    List<Answer> queryNextTreeAnswer(@Param("questionId") Long questionId,@Param("id") Long id,@Param("supportSum") Long supportSum);
     List<Long> getAnswerOrder(Long questionId);
+    Integer userHasAttention(@Param("userId") Long userId,@Param("answererId") Long answererId);
+    Integer userHasSupport(@Param("userId") Long userId,@Param("answerId") Long answerId);
 }

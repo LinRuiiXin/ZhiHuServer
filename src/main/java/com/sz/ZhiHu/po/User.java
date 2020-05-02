@@ -14,6 +14,9 @@ public class User implements Serializable {
     private String password;
     private String mail;
     private String phone;
+    private Integer followSum;
+    private Long fensSum;
+    private Integer collectSum;
     private String profile;
     private String portraitFileName;
     private Date registerDate;
@@ -57,6 +60,30 @@ public class User implements Serializable {
         this.phone = phone;
     }
 
+    public Integer getFollowSum() {
+        return followSum;
+    }
+
+    public void setFollowSum(Integer followSum) {
+        this.followSum = followSum;
+    }
+
+    public Long getFensSum() {
+        return fensSum;
+    }
+
+    public void setFensSum(Long fensSum) {
+        this.fensSum = fensSum;
+    }
+
+    public Integer getCollectSum() {
+        return collectSum;
+    }
+
+    public void setCollectSum(Integer collectSum) {
+        this.collectSum = collectSum;
+    }
+
     public String getProfile() {
         return profile;
     }
@@ -89,6 +116,9 @@ public class User implements Serializable {
                 ", password='" + password + '\'' +
                 ", mail='" + mail + '\'' +
                 ", phone='" + phone + '\'' +
+                ", followSum=" + followSum +
+                ", fensSum=" + fensSum +
+                ", collectSum=" + collectSum +
                 ", profile='" + profile + '\'' +
                 ", portraitFileName='" + portraitFileName + '\'' +
                 ", registerDate=" + registerDate +

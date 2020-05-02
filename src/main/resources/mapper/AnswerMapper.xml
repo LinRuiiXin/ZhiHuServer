@@ -4,9 +4,32 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sz.ZhiHu.dao.AnswerDao">
     <insert id="insertAnswer" keyProperty="id" useGeneratedKeys="true">
-        insert into answer(questionId,userId,content,contentType,supportSum,commentSum,time)
-        values (#{questionId},#{userId},#{content},#{contentType},0,0,now())
+        insert into answer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            questionId,
+            userId,
+            content,
+            contentType,
+            <if test="thumbnail != null">
+                thumbnail,
+            </if>
+            supportSum,
+            commentSum,
+            time
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            #{questionId},
+            #{userId},
+            #{content},
+            #{contentType},
+            <if test="thumbnail != null">
+                #{thumbnail},
+            </if>
+            0,0,now()
+        </trim>
     </insert>
+
     <select id="queryRandomAnswerByQuestionId" resultType="answer">
         select * from answer where questionId = #{questionId} order by rand() limit 1
     </select>
@@ -16,28 +39,23 @@
     <select id="queryAnswerById" resultType="answer">
         select id,questionId,userId,supportSum,commentSum,time from answer where id = #{id}
     </select>
+
     <select id="queryNextAnswer" resultType="answer">
-        select id,questionId,userId,supportSum,commentSum,time
-        from answer
-        where questionId = #{questionId} and supportSum &lt;= #{supportSum} limit 1
     </select>
+
     <select id="queryPreviousAnswer" resultType="answer">
-        select id,questionId,userId,supportSum,commentSum,time
-        from (
-            select id,questionId,userId,supportSum,commentSum,time from answer
-            where questionId = #{questionId} and supportSum >= #{suppportSum}
-        ) as a
-        where id &lt; #{id} limit 0,1
     </select>
+
     <select id="queryNextTreeAnswer" resultType="answer">
-        select id,questionId,userId,supportSum,commentSum,time
-        from (
-            select id,questionId,userId,supportSum,commentSum,time from answer
-            where questionId = #{questionId} and supportSum &lt; #{supportSum} order by supportSum desc,id asc
-        ) as a
-        where id >= #{id} limit 0,3
     </select>
+
     <select id="getAnswerOrder" resultType="java.lang.Long">
         select id from answer where questionId = #{questionId} order by supportSum desc,id asc
+    </select>
+    <select id="userHasAttention" resultType="java.lang.Integer">
+        select 1 from attention where userId = #{userId} and answererId = #{answererId} limit 1
+    </select>
+    <select id="userHasSupport" resultType="java.lang.Integer">
+        select 1 from answer_support where userId = #{userId} and answerId = #{answerId} limit 1
     </select>
 </mapper>

@@ -18,6 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class QuestionServiceImpl implements QuestionService {
+    /**
+     *    key-questionId value-lock
+     *    根据questionId决定哪个问题由哪个锁保护
+     */
     private Map<Long,Object> locks;
     @Autowired
     QuestionDao questionDao;
@@ -58,6 +62,7 @@ public class QuestionServiceImpl implements QuestionService {
         });
         return beans;
     }
+    //竞态条件
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @Override
     public void subscribeQuestion(Long userId, Long questionId) {
@@ -71,7 +76,7 @@ public class QuestionServiceImpl implements QuestionService {
     public void incrementAnswer(Long questionId) {
         questionDao.incrementAnswer(questionId);
     }
-
+    //竞态条件
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @Override
     public void disSubscribeQuestion(Long userId, Long questionId) {
@@ -96,42 +101,39 @@ public class QuestionServiceImpl implements QuestionService {
      */
     @Override
     public List<Long> getAnswerOrder(Long questionId) {
-        synchronized (locks){
-            if(!locks.containsKey(questionId)){
-                locks.put(questionId,new Object());
-            }
-        }
+        locks.putIfAbsent(questionId,new Object());
         Object lock = locks.get(questionId);
         String key = "AnswerOrder:"+questionId;
         List<Long> answerOrder = null;
-        synchronized (lock){
             if(!redisTemplate.hasKey(key)){
-                answerOrder = answerDao.getAnswerOrder(questionId);
-                redisTemplate.opsForValue().set(key,answerOrder);
+                synchronized (lock) {
+                    if(!redisTemplate.hasKey(key)){
+                        answerOrder = answerDao.getAnswerOrder(questionId);
+                        redisTemplate.opsForValue().set(key, answerOrder);
+                    }else
+                        answerOrder = (List<Long>) redisTemplate.opsForValue().get(key);
+                }
             }else{
                 answerOrder = (List<Long>) redisTemplate.opsForValue().get(key);
             }
-        }
         return answerOrder;
     }
 
-    @Async
     @Override
     public void updateQuestionOrder(Long questionId) {
-        synchronized (locks){
-            if(!locks.containsKey(questionId)){
-                locks.put(questionId,new Object());
-            }
-        }
+        locks.putIfAbsent(questionId,new Object());
         Object lock = locks.get(questionId);
         String key = "AnswerOrder:"+questionId;
         List<Long> answerOder = answerDao.getAnswerOrder(questionId);
-        synchronized (lock){
-            if(!redisTemplate.hasKey(key)){
-                redisTemplate.opsForValue().set(key,answerOder);
-            }else{
-                redisTemplate.boundValueOps(key).set(answerOder);
+        if(!redisTemplate.hasKey(key)){
+            synchronized (lock) {
+                if(!redisTemplate.hasKey(key))
+                    redisTemplate.opsForValue().set(key, answerOder);
+                else
+                    redisTemplate.boundValueOps(key).set(answerOder);
             }
+        }else{
+            redisTemplate.boundValueOps(key).set(answerOder);
         }
     }
 }

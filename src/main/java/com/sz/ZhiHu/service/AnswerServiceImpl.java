@@ -1,6 +1,7 @@
 package com.sz.ZhiHu.service;
 
 import com.sz.ZhiHu.dao.AnswerDao;
+import com.sz.ZhiHu.dto.SimpleDto;
 import com.sz.ZhiHu.po.Answer;
 import com.sz.ZhiHu.po.User;
 import com.sz.ZhiHu.vo.AnswerVo;
@@ -9,9 +10,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 @Service
 public class AnswerServiceImpl implements AnswerService{
@@ -21,15 +30,23 @@ public class AnswerServiceImpl implements AnswerService{
     QuestionService questionService;
     @Autowired
     UserService userService;
+    @Autowired
+    ExecutorService executorService;
     @Value("${spring.servlet.multipart.location}")
     private String resourcesLocation;
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @Override
-    public Answer insertAnswer(Answer answer) {
-        answerDao.insertAnswer(answer);
-        questionService.incrementAnswer(answer.getQuestionId());
-        questionService.updateQuestionOrder(answer.getQuestionId());
-        return answer;
+    public SimpleDto insertAnswer(MultipartFile file, Answer answer) {
+        try {
+            answerDao.insertAnswer(answer);
+            File newFile = new File("/Answer/" + answer.getId() + ".txt");
+            file.transferTo(newFile);
+            questionService.updateQuestionOrder(answer.getQuestionId());
+            return new SimpleDto(true,null,null);
+        }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new SimpleDto(false,"IO异常",null);
+        }
     }
 
     @Override
@@ -43,44 +60,70 @@ public class AnswerServiceImpl implements AnswerService{
     }
 
     @Override
-    public AnswerVo getAnswerById(Long id) {
+    public AnswerVo getAnswerById(Long userId,Long id) throws ExecutionException, InterruptedException {
         Answer answer = answerDao.queryAnswerById(id);
-        return answer != null ? wrapAnswer(answer) : null;
+        return answer != null ? wrapAnswer(userId,answer) : null;
     }
 
     @Override
-    public AnswerVo getNextAnswer(Long questionId, Long id) {
+    public AnswerVo getNextAnswer(Long userId,Long questionId, Long id) throws ExecutionException, InterruptedException {
         List<Long> candidateId = getCandidateId(questionId, id, 1);
-        return candidateId.size() == 0 ? null : getAnswerById(candidateId.get(0));
+        if(candidateId.size() == 0)
+            return null;
+        Future<String> answerContent = getAnswerContent(candidateId.get(0));
+        AnswerVo answerById = getAnswerById(userId, candidateId.get(0));
+        answerById.getAnswer().setContent(answerContent.get());
+        return answerById;
     }
 
     @Override
-    public AnswerVo getPreviousAnswer(Long questionId, Long id) {
+    public AnswerVo getPreviousAnswer(Long userId,Long questionId, Long id) throws ExecutionException, InterruptedException {
         Long previousId = getPreviousId(questionId, id);
         if(previousId != null){
-            AnswerVo answerById = getAnswerById(previousId);
+            AnswerVo answerById = getAnswerById(userId,previousId);
             return answerById;
         }
         return null;
     }
 
     @Override
-    public List<AnswerVo> getNextTreeAnswer(Long questionId,Long id) {
+    public List<AnswerVo> getNextTreeAnswer(Long userId,Long questionId,Long id) throws ExecutionException, InterruptedException {
         List<Long> candidateId = getCandidateId(questionId, id, 2);
         candidateId.add(0,id);
         System.out.println(candidateId);
-        List<AnswerVo> answerBatch = getAnswerBatch(candidateId);
+        List<AnswerVo> answerBatch = getAnswerBatch(userId,candidateId);
         return answerBatch;
     }
 
-
-    private AnswerVo wrapAnswer(Answer answer){
-        answer.setContent(getAnswerContent(answer.getId()));
-        User user = userService.getUserById(answer.getUserId());
-        return new AnswerVo(user,answer);
+    @Override
+    public boolean userHasAttention(Long userId, Long answererId) {
+        return answerDao.userHasAttention(userId,answererId) != null;
     }
 
-    private String getAnswerContent(Long id) {
+    @Override
+    public boolean userHasSupport(Long userId, Long answerId) {
+        return answerDao.userHasSupport(userId,answerId) != null;
+    }
+
+    private AnswerVo wrapAnswer(Long userId,Answer answer) throws ExecutionException, InterruptedException {
+        AnswerVo answerVo = new AnswerVo();
+        if(userId != -1){
+            answerVo.setAttention(userHasAttention(userId,answer.getUserId()));
+            answerVo.setSupport(userHasSupport(userId,answer.getId()));
+        }
+        User user = userService.getUserById(answer.getUserId());
+        answerVo.setUser(user);
+        answerVo.setAnswer(answer);
+        return answerVo;
+    }
+
+    private Future<String> getAnswerContent(Long id) {
+        return executorService.submit(()-> {
+                return getAnswerFileContent(id);
+        });
+    }
+
+    private String getAnswerFileContent(Long id) {
         FileReader fileReader = null;
         StringBuffer stringBuffer;
         try {
@@ -101,8 +144,9 @@ public class AnswerServiceImpl implements AnswerService{
                 e.printStackTrace();
             }
         }
-        return null;
+        return "";
     }
+
     private List<Long> getCandidateId(Long questionId,Long id,Integer len){
         List<Long> answerOrder = questionService.getAnswerOrder(questionId);
         List<Long> ids = new ArrayList<>();
@@ -143,9 +187,33 @@ public class AnswerServiceImpl implements AnswerService{
         }
         return null;
     }
-    private List<AnswerVo> getAnswerBatch(List<Long> ids){
+    private List<AnswerVo> getAnswerBatch(Long userId,List<Long> ids) throws ExecutionException, InterruptedException {
+        List<Future<String>> futures = getContentBatch(ids);
         List<AnswerVo> res = new ArrayList<>();
-        ids.forEach(id->res.add(getAnswerById(id)));
+        ids.forEach(id-> {
+            try {
+                res.add(getAnswerById(userId,id));
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+            }
+        });
+        for(int i = 0 ; i < res.size() ; i++){
+            res.get(i).getAnswer().setContent(futures.get(i).get());
+        }
         return res;
+    }
+
+    private List<Future<String>> getContentBatch(List<Long> ids) throws InterruptedException {
+        List<Callable<String>> callableList = new ArrayList<>();
+        ids.forEach(id->{
+            callableList.add(()->{
+                return getAnswerFileContent(id);
+            });
+        });
+        List<Future<String>> futures = executorService.invokeAll(callableList);
+        return futures;
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/Answer")
@@ -19,42 +20,33 @@ public class AnswerController {
     @Autowired
     AnswerService answerService;
     @PostMapping
-    public SimpleDto addAnswer(MultipartHttpServletRequest request, @RequestParam("questionId")Long questionId,@RequestParam("userId")Long userId,@RequestParam("contentType")Integer contentType,@RequestParam String content){
+    public SimpleDto addAnswer(MultipartHttpServletRequest request, @RequestParam Long questionId,@RequestParam Long userId,@RequestParam Integer contentType,@RequestParam String content,@RequestParam String thumbnail){
         MultipartFile answerFile = request.getFile("answer");
         if(answerFile != null){
-            SimpleDto simpleDto = null;
-            Answer answer = answerService.insertAnswer(new Answer(questionId, userId,content, contentType));
-            File file = new File("/Answer/"+answer.getId()+".txt");
-            try {
-                answerFile.transferTo(file);
-                simpleDto = new SimpleDto(true,null,null);
-            } catch (IOException e) {
-                e.printStackTrace();
-                simpleDto = new SimpleDto(false,"IO异常",null);
-            }
-            return  simpleDto;
+            SimpleDto simpleDto = answerService.insertAnswer(answerFile,new Answer(questionId,userId,content,contentType,contentType == 1 ? null : thumbnail));
+            return simpleDto;
         }else{
             return new SimpleDto(false,"回答不能为空,",null);
         }
     }
-    @GetMapping("/{id}")
-    public SimpleDto getAnswerById(@PathVariable Long id){
-        AnswerVo answerById = answerService.getAnswerById(id);
+    @GetMapping("/{userId}/{id}")
+    public SimpleDto getAnswerById(@PathVariable Long userId,@PathVariable Long id) throws ExecutionException, InterruptedException {
+        AnswerVo answerById = answerService.getAnswerById(userId,id);
         return answerById.getAnswer() == null ? new SimpleDto(false,"此回答已被删除",null) : new SimpleDto(true,null,answerById);
     }
-    @GetMapping("/Next/{questionId}/{id}")
-    public SimpleDto getNextAnswer(@PathVariable Long questionId,@PathVariable Long id){
-        AnswerVo nextAnswer = answerService.getNextAnswer(questionId, id);
+    @GetMapping("/Next/{userId}/{questionId}/{id}")
+    public SimpleDto getNextAnswer(@PathVariable Long userId,@PathVariable Long questionId,@PathVariable Long id) throws ExecutionException, InterruptedException {
+        AnswerVo nextAnswer = answerService.getNextAnswer(userId,questionId, id);
         return nextAnswer == null ? new SimpleDto(false,"没有更多内容了",null) : new SimpleDto(true,null,nextAnswer);
     }
-    @GetMapping("/Previous/{questionId}/{id}")
-    public SimpleDto getPreviousAnswer(@PathVariable Long questionId,@PathVariable Long id){
-        AnswerVo nextAnswer = answerService.getPreviousAnswer(questionId, id);
+    @GetMapping("/Previous/{userId}/{questionId}/{id}")
+    public SimpleDto getPreviousAnswer(@PathVariable Long userId,@PathVariable Long questionId,@PathVariable Long id) throws ExecutionException, InterruptedException {
+        AnswerVo nextAnswer = answerService.getPreviousAnswer(userId,questionId, id);
         return nextAnswer == null ? new SimpleDto(false,"没有更多内容了",null) : new SimpleDto(true,null,nextAnswer);
     }
-    @GetMapping("/Page/{questionId}/{id}")
-    public SimpleDto getNextTreeAnswer(@PathVariable Long questionId, @PathVariable Long id){
-        List<AnswerVo> nextTreeAnswer = answerService.getNextTreeAnswer(questionId,id);
+    @GetMapping("/Page/{userId}/{questionId}/{id}")
+    public SimpleDto getNextTreeAnswer(@PathVariable Long userId,@PathVariable Long questionId, @PathVariable Long id) throws ExecutionException, InterruptedException {
+        List<AnswerVo> nextTreeAnswer = answerService.getNextTreeAnswer(userId,questionId,id);
         return new SimpleDto(true,null,nextTreeAnswer);
     }
 }

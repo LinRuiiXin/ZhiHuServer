@@ -25,6 +25,6 @@
         update user set portraitFileName = #{fileName} where id = #{id}
     </update>
     <select id="queryUserById" resultType="user">
-        select id,userName,mail,profile,portraitFileName,registerDate from user where id = #{id}
+        select id,userName,mail,followSum,fensSum,collectSum,profile,portraitFileName,registerDate from user where id = #{id}
     </select>
 </mapper>
