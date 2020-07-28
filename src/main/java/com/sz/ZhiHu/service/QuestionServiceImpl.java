@@ -101,8 +101,13 @@ public class QuestionServiceImpl implements QuestionService {
      */
     @Override
     public List<Long> getAnswerOrder(Long questionId) {
-        locks.putIfAbsent(questionId,new Object());
         Object lock = locks.get(questionId);
+        if(lock == null){
+            Object o = new Object();
+            lock = locks.putIfAbsent(questionId,o);
+            if(lock == null)
+                lock = o;
+        }
         String key = "AnswerOrder:"+questionId;
         List<Long> answerOrder = null;
             if(!redisTemplate.hasKey(key)){
@@ -121,8 +126,13 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public void updateQuestionOrder(Long questionId) {
-        locks.putIfAbsent(questionId,new Object());
         Object lock = locks.get(questionId);
+        if(lock == null){
+            Object o = new Object();
+            lock = locks.putIfAbsent(questionId, o);
+            if(lock == null)
+                lock = o;
+        }
         String key = "AnswerOrder:"+questionId;
         List<Long> answerOder = answerDao.getAnswerOrder(questionId);
         if(!redisTemplate.hasKey(key)){

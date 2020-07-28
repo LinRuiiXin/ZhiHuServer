@@ -6,4 +6,8 @@
     <select id="getRandomArticle" resultType="article">
         select * from article order by rand() limit #{sum}
     </select>
+    <insert id="addArticle" parameterType="article">
+        insert into article (authorId,title,content,thumbnail,contentType)
+        values (#{authorId},#{title},#{content},#{thumbnail},contentType)
+    </insert>
 </mapper>

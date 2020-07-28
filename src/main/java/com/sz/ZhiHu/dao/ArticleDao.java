@@ -8,4 +8,5 @@ import java.util.List;
 @Repository
 public interface ArticleDao {
     List<Article> getRandomArticle(int sum);
+    void addArticle(Article article);
 }

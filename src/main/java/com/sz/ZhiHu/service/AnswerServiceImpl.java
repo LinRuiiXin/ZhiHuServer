@@ -80,7 +80,9 @@ public class AnswerServiceImpl implements AnswerService{
     public AnswerVo getPreviousAnswer(Long userId,Long questionId, Long id) throws ExecutionException, InterruptedException {
         Long previousId = getPreviousId(questionId, id);
         if(previousId != null){
+            Future<String> answerContent = getAnswerContent(id);
             AnswerVo answerById = getAnswerById(userId,previousId);
+            answerById.getAnswer().setContent(answerContent.get());
             return answerById;
         }
         return null;

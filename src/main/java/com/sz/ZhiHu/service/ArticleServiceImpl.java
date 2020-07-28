@@ -15,4 +15,9 @@ public class ArticleServiceImpl implements ArticleService {
     public List<Article> getRandomArticle(int sum) {
         return articleDao.getRandomArticle(sum);
     }
+
+    @Override
+    public void addArticle(Article article) {
+        articleDao.addArticle(article);
+    }
 }

@@ -7,8 +7,21 @@ public class Article {
     private Long id;
     private Long authorId;
     private String title;
+    private String content;
+    private String thumbnail;
+    private Integer contentType;
     private Long supportSum;
     private Long commentSum;
+
+    public Article(){}
+
+    public Article(Long authorId, String title, String content, String thumbnail, Integer contentType) {
+        this.authorId = authorId;
+        this.title = title;
+        this.content = content;
+        this.thumbnail = thumbnail;
+        this.contentType = contentType;
+    }
 
     public Long getId() {
         return id;
@@ -34,6 +47,30 @@ public class Article {
         this.title = title;
     }
 
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
+    public Integer getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(Integer contentType) {
+        this.contentType = contentType;
+    }
+
     public Long getSupportSum() {
         return supportSum;
     }
@@ -56,6 +93,9 @@ public class Article {
                 "id=" + id +
                 ", authorId=" + authorId +
                 ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", thumbnail='" + thumbnail + '\'' +
+                ", contentType=" + contentType +
                 ", supportSum=" + supportSum +
                 ", commentSum=" + commentSum +
                 '}';
